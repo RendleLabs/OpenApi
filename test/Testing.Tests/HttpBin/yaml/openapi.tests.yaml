@@ -1,0 +1,24 @@
+﻿server: https://httpbin.org
+tests:
+  "/base64/{value}":
+    get:
+      - parameters:
+          value: SGVsbG8sIHdvcmxkIQ==
+        expect:
+          status: 200
+          responseBody:
+            text/html: Hello, world!
+  "/anything/{anything}":
+    post:
+      - parameters:
+          anything: foo
+        requestBody:
+          application/json:
+            id: bar
+        expect:
+          status: 200
+          responseBody:
+            application/json:
+              json:
+                id: bar
+              url: 'https://httpbin.org/anything/foo'

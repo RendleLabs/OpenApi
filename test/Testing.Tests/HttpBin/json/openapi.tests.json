@@ -1,0 +1,18 @@
+﻿{
+  "server": "https://httpbin.org",
+  "tests": {
+    "/base64/{value}": {
+      "get": [
+        {
+          "parameters": {
+            "value": "SGVsbG8sIHdvcmxkIQ=="
+          },
+          "expect": {
+            "status": 200,
+            "responseBody": "Hello, world!"
+          }
+        }
+      ]
+    }
+  }
+}

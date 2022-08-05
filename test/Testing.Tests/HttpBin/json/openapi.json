@@ -1,0 +1,40 @@
+﻿{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "httpbin",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://httpbin.org"
+    }
+  ],
+  "paths": {
+    "/base64/{value}": {
+      "parameters": [
+        {
+          "name": "value",
+          "schema": {
+            "type": "string"
+          },
+          "required": true,
+          "in": "path"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Decoded base64 content",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
