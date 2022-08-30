@@ -13,7 +13,6 @@ public class ReferenceVisitor : OpenApiVisitorBase
 
     public bool AnyChanges { get; set; }
     public Dictionary<string, string> PathToIdLookup { get; } = new(StringComparer.OrdinalIgnoreCase);
-    public Dictionary<string, OpenApiSchema> Schemata { get; } = new();
 
     public ReferenceVisitor(OpenApiDocument document, string baseDirectory)
     {
@@ -24,28 +23,22 @@ public class ReferenceVisitor : OpenApiVisitorBase
 
     public override void Visit(IOpenApiReferenceable referenceable)
     {
+        if (referenceable is not OpenApiSchema) return;
         if (!referenceable.UnresolvedReference) return;
         if (!referenceable.Reference.IsExternal) return;
         if (referenceable.Reference.ExternalResource is not { Length: > 0 } externalResource) return;
-        
-        if (referenceable is not OpenApiSchema) return;
 
         var path = Path.GetFullPath(externalResource, _baseDirectory);
 
         if (!PathToIdLookup.TryGetValue(path, out var id))
         {
             var schema = _schemaLoader.LoadSchema(path, out var diagnostic);
-            if (diagnostic.Warnings is {Count: > 0} warnings)
-            {
-                
-            }
             if (schema is null) return;
 
             AnyChanges = true;
             
             id = GetComponentId(path);
 
-            Schemata[id] = schema;
             PathToIdLookup[path] = id;
 
             _document.Components ??= new OpenApiComponents();
