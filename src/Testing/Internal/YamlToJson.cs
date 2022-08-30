@@ -101,5 +101,4 @@ internal static class YamlToJson
         
         writer.WriteStringValue(value.Value);
     }
-    
 }

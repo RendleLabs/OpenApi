@@ -1,0 +1,47 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Contact API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.server.test/v1"
+    }
+  ],
+  "paths": {
+    "/api/countries/{isoCountryCode}": {
+      "parameters": [
+        {
+          "in": "path",
+          "required": true,
+          "name": "isoCountryCode",
+          "schema": {
+            "$ref": "./IsoCountryCode.schema.json"
+          }
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Country details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./Country.schema.json"
+                },
+                "example": {
+                  "isoCode": "GB",
+                  "englishShortName": "United Kingdom"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid ISO country code"
+          }
+        }
+      }
+    }
+  }
+}

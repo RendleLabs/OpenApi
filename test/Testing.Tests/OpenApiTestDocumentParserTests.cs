@@ -8,6 +8,7 @@ public class OpenApiTestDocumentParserTests
     [Fact]
     public void ParsesYaml()
     {
+        Assert.Equal(1, 2);
         using var stream = ResourceStreams.Get("HttpBin.yaml.openapi.tests.yaml");
         var actual = new OpenApiTestDocumentParser().Parse(stream);
         

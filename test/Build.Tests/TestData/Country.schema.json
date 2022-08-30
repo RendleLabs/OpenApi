@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "https://newdaycards.com/contactdetails/Country.schema.json",
+  "description": "An ISO-recognized country",
+  "type": "object",
+  "properties": {
+    "isoCode": {
+      "$ref": "./IsoCountryCode.schema.json"
+    },
+    "englishShortName": {
+      "type": "string"
+    }
+  }
+}
