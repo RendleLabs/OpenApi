@@ -1,5 +1,5 @@
 {
-  "name": "dotlabs-openapi-web",
+  "name": "rendlelabs-openapi-web",
   "version": "1.0.0",
   "description": "Libraries for working with static OpenApi files and testing OpenApi implementations",
   "repository": {

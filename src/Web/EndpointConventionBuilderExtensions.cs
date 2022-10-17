@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace DotLabs.OpenApi.Web;
+namespace RendleLabs.OpenApi.Web;
 
 internal static class EndpointConventionBuilderExtensions
 {

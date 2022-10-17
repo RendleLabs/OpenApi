@@ -1,6 +1,6 @@
 using Microsoft.OpenApi.Models;
 
-namespace DotLabs.OpenApi.Web;
+namespace RendleLabs.OpenApi.Web;
 
 [Serializable]
 public class StaticOpenApiLoadException : Exception

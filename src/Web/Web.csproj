@@ -13,7 +13,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/RendleLabs/OpenApi</PackageProjectUrl>
     <PackageTags>openapi;swagger</PackageTags>
-    <Version>0.1.1-beta</Version>
+    <Version>0.1.4-beta</Version>
   </PropertyGroup>
   
   <ItemGroup>
@@ -40,6 +40,10 @@
     <EmbeddedResource Include="node_modules/swagger-ui-dist/swagger-ui.css.map" />
     <EmbeddedResource Include="node_modules/swagger-ui-dist/swagger-ui.js" />
     <EmbeddedResource Include="node_modules/swagger-ui-dist/swagger-ui.js.map" />
+    <None Remove="Resources\redoc.html" />
+    <EmbeddedResource Include="Resources\redoc.html" />
+    <None Remove="Resources\elements.html" />
+    <EmbeddedResource Include="Resources\elements.html" />
   </ItemGroup>
 
   <ItemGroup>
