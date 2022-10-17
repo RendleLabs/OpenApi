@@ -22,22 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bundle\Bundle.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestData\Country.schema.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\IsoCountryCode.schema.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\openapi.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\openapi.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\..\src\Analyzer\Analyzer.csproj" />
   </ItemGroup>
 
 </Project>

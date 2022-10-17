@@ -1,4 +1,4 @@
-using RendleLabs.OpenApi.Web;
+using DotLabs.OpenApi.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,11 +9,7 @@ app.UseStaticOpenApi("openapi.yaml", new StaticOpenApiOptions
     Version = 3,
     JsonPath = "swagger/v1/openapi.json",
     YamlPath = "swagger/v1/openapi.yaml",
-});
-
-app.UseSwaggerUI(s =>
-{
-    s.SwaggerEndpoint("v1/openapi.json", "Address V1");
+    UiPathPrefix = "swagger",
 });
 
 app.MapGet("/", () => "Hello World!");
