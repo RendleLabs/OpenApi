@@ -18,20 +18,13 @@ public class OpenApiTheoryData
     {
         var server = _testDocument.Server;
 
-        foreach (var (pathTemplate, pathTest) in _testDocument.Tests)
+        foreach (var test in _testDocument.Tests)
         {
-            foreach (var (operationType, operationTests) in pathTest.Operations)
-            {
-                foreach (var operationTest in operationTests)
-                {
-                    var path = CreatePath(operationType, pathTemplate, operationTest.Parameters);
-                    var request = OpenApiTestRequest(server, path, operationType, operationTest);
+            var request = OpenApiTestRequest(server, test.Uri, test.Method, test);
 
-                    var response = OpenApiTestResponse(operationTest.Expect);
-
-                    yield return new object?[] { request, response };
-                }
-            }
+            var response = OpenApiTestResponse(test.Expect);
+            
+            yield return new object?[] { request, response };
         }
     }
 
@@ -59,13 +52,13 @@ public class OpenApiTheoryData
         return path + queryString;
     }
 
-    private static OpenApiTestRequest OpenApiTestRequest(string? server, string path, OperationType operationType, OpenApiTest operationTest)
+    private static OpenApiTestRequest OpenApiTestRequest(string? server, string path, HttpMethod method, OpenApiTest operationTest)
     {
         var request = new OpenApiTestRequest
         {
             Server = server,
             Path = path,
-            Method = GetHttpMethod(operationType),
+            Method = method,
             Body = operationTest.RequestBody?.Content,
             ContentType = operationTest.RequestBody?.ContentType,
             Headers = operationTest.Headers

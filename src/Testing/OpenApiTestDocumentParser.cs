@@ -26,15 +26,18 @@ public class OpenApiTestDocumentParser
             ? serverNode.Value
             : null;
 
-        var tests = new Dictionary<string, OpenApiTestPath>();
+        var tests = new List<OpenApiTest>();
         
-        if (node.TryGetMap("tests", out var testsNode))
+        if (node.TryGetSequence("tests", out var testsNode))
         {
-            foreach (var (k, v) in testsNode.Children)
+            foreach (var testNode in testsNode.OfType<YamlMappingNode>())
             {
-                if (TryParsePathNode(k, v, out var path))
+                foreach (var (pathNode, map) in testNode.ChildrenOfType<YamlScalarNode, YamlMappingNode>())
                 {
-                    tests.Add(path.Path, path);
+                    if (TryParseTestNode(pathNode.Value, map, out var test))
+                    {
+                        tests.Add(test);
+                    }
                 }
             }
         }
@@ -42,8 +45,55 @@ public class OpenApiTestDocumentParser
         return new OpenApiTestDocument(server, tests);
     }
 
-    private static bool TryParsePathNode(YamlNode key, YamlNode value, [NotNullWhen(true)] out OpenApiTestPath? path)
+    private static bool TryParseTestNode(string? key, YamlMappingNode value, [NotNullWhen(true)] out OpenApiTest? test)
     {
+        test = null;
+        if (key is not { Length: > 0 }) return false;
+        if (!TryParseMethodAndPath(key, out var method, out var path)) return false;
+        if (!TryParseTestNode(value, out test)) return false;
+        test.Uri = path;
+        test.Method = method;
+
+        return true;
+    }
+
+    private static bool TryParseMethodAndPath(string key, [NotNullWhen(true)] out HttpMethod? method, [NotNullWhen(true)] out string? path)
+    {
+        path = null;
+        method = null;
+        var parts = key.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 2)
+        {
+            if (parts[1] is not { Length: > 0 }) return false;
+            if (!TryParseMethod(parts[0], out method)) return false;
+            path = parts[1];
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryParseMethod(string str, [NotNullWhen(true)] out HttpMethod? method)
+    {
+        method = str.ToUpperInvariant() switch
+        {
+            "DELETE" => HttpMethod.Delete,
+            "GET" => HttpMethod.Get,
+            "HEAD" => HttpMethod.Head,
+            "OPTIONS" => HttpMethod.Options,
+            "PATCH" => HttpMethod.Patch,
+            "POST" => HttpMethod.Post,
+            "PUT" => HttpMethod.Put,
+            "TRACE" => HttpMethod.Trace,
+            _ => null
+        };
+
+        return method is not null;
+    }
+
+    private static bool TryParsePathNode(YamlNode key, YamlNode value, [NotNullWhen(true)] out HttpMethod? method, [NotNullWhen(true)] out OpenApiTestPath? path)
+    {
+        method = null;
         path = null;
         if (key is not YamlScalarNode keyNode || keyNode.Value is null) return false;
         if (value is not YamlMappingNode valueMap) return false;
@@ -90,8 +140,6 @@ public class OpenApiTestDocumentParser
     {
         test = null;
         if (node is not YamlMappingNode map) return false;
-
-        var parameters = ParseParameters(map);
         var headers = ParseHeaders(map);
 
         var requestBody = ParseBody(map, "requestBody");
@@ -100,7 +148,6 @@ public class OpenApiTestDocumentParser
 
         test = new OpenApiTest
         {
-            Parameters = new ReadOnlyDictionary<string, string?>(parameters),
             Expect = expect,
             RequestBody = requestBody,
             Headers = headers,

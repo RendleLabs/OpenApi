@@ -4,13 +4,13 @@ namespace RendleLabs.OpenApi.Testing;
 
 public class OpenApiTestDocument
 {
-    public OpenApiTestDocument(string? server, Dictionary<string, OpenApiTestPath> tests)
+    public OpenApiTestDocument(string? server, List<OpenApiTest> tests)
     {
         Server = server;
-        Tests = new ReadOnlyDictionary<string, OpenApiTestPath>(tests);
+        Tests = tests.ToArray();
     }
 
     public string? Server { get; }
     
-    public IReadOnlyDictionary<string, OpenApiTestPath> Tests { get; }
+    public OpenApiTest[] Tests { get; }
 }

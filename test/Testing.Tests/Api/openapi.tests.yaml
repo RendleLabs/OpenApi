@@ -1,0 +1,18 @@
+﻿server: https://localhost:5001
+sequences:
+  PostAndGet:
+  - POST /books:
+      requestBody:
+        application/json:
+          title: Mort
+          author: Terry Pratchett
+      expect:
+        status: 201
+      output: PostBook
+  - GET {PostBook.Headers.Location}:
+      expect:
+        status: 200
+        response:
+          application/json:
+            title: Mort
+            author: Terry Pratchett
