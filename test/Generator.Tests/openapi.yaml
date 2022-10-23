@@ -1,0 +1,79 @@
+﻿openapi: 3.0.3
+info:
+  title: Test API
+  description: Test API
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:5001'
+tags:
+  - name: Books
+paths:
+  /books:
+    get:
+      operationId: GetBooks
+      tags:
+        - Books
+      responses: 
+        '200':
+          description: OK
+          content: 
+            application/json:
+              schema: 
+                type: array
+                items:
+                  title: Book
+                  type: object
+                  properties: 
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    author:
+                      type: string
+    post:
+      operationId: AddBook
+      tags:
+        - Books
+      requestBody: 
+        content: 
+          application/json:
+            schema: 
+              title: NewBook
+              type: object
+              properties: 
+                title:
+                  type: string
+                author:
+                  type: string
+      responses: 
+        '201':
+          description: Created
+          headers: 
+            Location:
+              description: URI of new book
+  /books/{id}:
+    get:
+      operationId: GetBook
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          schema: 
+            type: integer
+          required: true
+      responses: 
+        '200':
+          description: OK
+          content: 
+            application/json:
+              schema: 
+                title: Book
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  author:
+                    type: string

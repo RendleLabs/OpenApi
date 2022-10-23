@@ -10,7 +10,7 @@ tests:
       application/json:
         id: bar
     expect:
-      status: 201
+      status: 200
       responseBody:
         application/json:
           json:
