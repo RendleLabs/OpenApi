@@ -26,7 +26,7 @@ public class OpenApiTestDocumentParser
             ? serverNode.Value
             : null;
 
-        var tests = new List<OpenApiTest>();
+        var tests = new List<OpenApiTestElement>();
         
         if (node.TryGetSequence("tests", out var testsNode))
         {
@@ -45,7 +45,7 @@ public class OpenApiTestDocumentParser
         return new OpenApiTestDocument(server, tests);
     }
 
-    private static bool TryParseTestNode(string? key, YamlMappingNode value, [NotNullWhen(true)] out OpenApiTest? test)
+    private static bool TryParseTestNode(string? key, YamlMappingNode value, [NotNullWhen(true)] out OpenApiTestElement? test)
     {
         test = null;
         if (key is not { Length: > 0 }) return false;
@@ -98,7 +98,7 @@ public class OpenApiTestDocumentParser
         if (key is not YamlScalarNode keyNode || keyNode.Value is null) return false;
         if (value is not YamlMappingNode valueMap) return false;
 
-        var operations = new Dictionary<OperationType, OpenApiTest[]>();
+        var operations = new Dictionary<OperationType, OpenApiTestElement[]>();
 
         foreach (var (k, v) in valueMap.Children)
         {
@@ -116,7 +116,7 @@ public class OpenApiTestDocumentParser
         return true;
     }
 
-    private static bool TryParseOperationNode(YamlNode value, [NotNullWhen(true)] out OpenApiTest[]? tests)
+    private static bool TryParseOperationNode(YamlNode value, [NotNullWhen(true)] out OpenApiTestElement[]? tests)
     {
         tests = null;
         if (value is not YamlSequenceNode nodes) return false;
@@ -125,7 +125,7 @@ public class OpenApiTestDocumentParser
         return true;
     }
 
-    private static IEnumerable<OpenApiTest> ParseTestNodes(YamlSequenceNode nodes)
+    private static IEnumerable<OpenApiTestElement> ParseTestNodes(YamlSequenceNode nodes)
     {
         foreach (var child in nodes.Children)
         {
@@ -136,7 +136,7 @@ public class OpenApiTestDocumentParser
         }
     }
 
-    private static bool TryParseTestNode(YamlNode node, [NotNullWhen(true)] out OpenApiTest? test)
+    private static bool TryParseTestNode(YamlNode node, [NotNullWhen(true)] out OpenApiTestElement? test)
     {
         test = null;
         if (node is not YamlMappingNode map) return false;
@@ -146,7 +146,7 @@ public class OpenApiTestDocumentParser
         
         var expect = ParseExpect(map);
 
-        test = new OpenApiTest
+        test = new OpenApiTestElement
         {
             Expect = expect,
             RequestBody = requestBody,

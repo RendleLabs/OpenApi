@@ -2,6 +2,8 @@
 info:
   title: httpbin
   version: '1.0'
+tags:
+  - name: base64
 servers:
   - url: https://httpbin.org
 paths:
@@ -13,6 +15,8 @@ paths:
         required: true
         in: path
     get:
+      tags:
+        - base64
       responses:
         '200':
           description: Decoded base64 content
@@ -20,6 +24,7 @@ paths:
             text/html:
               schema:
                 type: string
+                format: 
   "/anything/{anything}":
     parameters:
       - name: anything

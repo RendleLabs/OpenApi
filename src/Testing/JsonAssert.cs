@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using FluentAssertions;
 
 namespace RendleLabs.OpenApi.Testing;
 
@@ -28,6 +29,7 @@ public static class JsonAssert
                 StringEquivalent(expected.GetString(), actual.GetString(), jsonPath);
                 break;
             case JsonValueKind.Number:
+                actual.ValueKind.Should().Be(JsonValueKind.Number);
                 NumberEquivalent(expected.GetDecimal(), actual.GetDecimal(), jsonPath);
                 break;
             case JsonValueKind.Undefined:
@@ -42,18 +44,12 @@ public static class JsonAssert
 
     private static void StringEquivalent(string? expected, string? actual, string jsonPath)
     {
-        if (expected != actual)
-        {
-            throw new JsonEqualException(expected, actual, jsonPath);
-        }
+        actual.Should().Be(expected, jsonPath);
     }
 
     private static void NumberEquivalent(decimal? expected, decimal? actual, string jsonPath)
     {
-        if (expected != actual)
-        {
-            throw new JsonEqualException(expected, actual, jsonPath);
-        }
+        actual.Should().Be(expected, jsonPath);
     }
 
     private static void ObjectEquivalent(JsonElement expected, JsonElement actual, string? jsonPath)
@@ -72,7 +68,7 @@ public static class JsonAssert
 
         if (expectedArray.Length != actualArray.Length)
         {
-            throw new JsonEqualException(expectedArray.Length, actualArray.Length, $"{jsonPath}[](Length)");
+            actualArray.Length.Should().Be(expectedArray.Length);
         }
 
         for (int i = 0, l = expectedArray.Length; i < l; i++)

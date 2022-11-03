@@ -4,7 +4,7 @@ namespace RendleLabs.OpenApi.Testing;
 
 public class OpenApiTestDocument
 {
-    public OpenApiTestDocument(string? server, List<OpenApiTest> tests)
+    public OpenApiTestDocument(string? server, List<OpenApiTestElement> tests)
     {
         Server = server;
         Tests = tests.ToArray();
@@ -12,5 +12,5 @@ public class OpenApiTestDocument
 
     public string? Server { get; }
     
-    public OpenApiTest[] Tests { get; }
+    public OpenApiTestElement[] Tests { get; }
 }

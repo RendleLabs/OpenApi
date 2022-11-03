@@ -3,7 +3,7 @@ using Microsoft.OpenApi.Readers;
 
 namespace RendleLabs.OpenApi.Testing.Tests;
 
-public class MemberDataTests
+public class SequenceTests
 {
     [Theory]
     [MemberData(nameof(Data))]

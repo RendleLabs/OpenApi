@@ -1,0 +1,10 @@
+description: Internal Server Error
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        title:
+          type: string
+        detail:
+          type: string

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Services;
@@ -7,62 +8,72 @@ namespace RendleLabs.OpenApi.Bundle;
 
 public class ReferenceVisitor : OpenApiVisitorBase
 {
+    private static readonly Regex IsHttp = new Regex(@"^https?:\/\/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    
     private readonly OpenApiDocument _document;
     private readonly string _baseDirectory;
     private readonly SchemaLoader _schemaLoader;
+    private readonly ReferenceInfoCollection _references;
 
     public bool AnyChanges { get; set; }
     public Dictionary<string, string> PathToIdLookup { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-    public ReferenceVisitor(OpenApiDocument document, string baseDirectory)
+    public ReferenceVisitor(OpenApiDocument document, string baseDirectory, ReferenceInfoCollection references)
     {
         _schemaLoader = new SchemaLoader();
         _document = document;
         _baseDirectory = baseDirectory;
+        _references = references;
+    }
+
+    private void VisitReference<T>(T element) where T : IOpenApiReferenceable
+    {
+        if (!element.UnresolvedReference) return;
+        if (!element.Reference.IsExternal) return;
+        if (element.Reference.ExternalResource is not { Length: > 0 } externalResource) return;
+
+        var path = IsHttp.IsMatch(externalResource)
+            ? externalResource
+            : Path.GetFullPath(externalResource, _baseDirectory);
+
+        var info = _references.GetOrAdd<T>(path);
+        info.References.Add(element);
     }
 
     public override void Visit(IOpenApiReferenceable referenceable)
     {
-        if (referenceable is not OpenApiSchema) return;
-        if (!referenceable.UnresolvedReference) return;
-        if (!referenceable.Reference.IsExternal) return;
-        if (referenceable.Reference.ExternalResource is not { Length: > 0 } externalResource) return;
-
-        var path = Path.GetFullPath(externalResource, _baseDirectory);
-
-        if (!PathToIdLookup.TryGetValue(path, out var id))
+        switch (referenceable)
         {
-            var schema = _schemaLoader.LoadSchema(path, out var diagnostic);
-            if (schema is null) return;
-
-            AnyChanges = true;
-            
-            id = GetComponentId(path);
-
-            PathToIdLookup[path] = id;
-
-            _document.Components ??= new OpenApiComponents();
-            _document.Components.Schemas[id] = schema;
+            case OpenApiCallback callback:
+                VisitReference(callback);
+                break;
+            case OpenApiExample example:
+                VisitReference(example);
+                break;
+            case OpenApiHeader header:
+                VisitReference(header);
+                break;
+            case OpenApiLink link:
+                VisitReference(link);
+                break;
+            case OpenApiParameter parameter:
+                VisitReference(parameter);
+                break;
+            case OpenApiPathItem pathItem:
+                VisitReference(pathItem);
+                break;
+            case OpenApiRequestBody requestBody:
+                VisitReference(requestBody);
+                break;
+            case OpenApiResponse response:
+                VisitReference(response);
+                break;
+            case OpenApiSchema schema:
+                VisitReference(schema);
+                break;
+            case OpenApiSecurityScheme securityScheme:
+                VisitReference(securityScheme);
+                break;
         }
-
-        referenceable.Reference = new OpenApiReference
-        {
-            Id = id,
-            Type = ReferenceType.Schema,
-            HostDocument = _document,
-        };
-        referenceable.UnresolvedReference = false;
-    }
-    
-    private static string GetComponentId(string path)
-    {
-        var fileName = Path.GetFileNameWithoutExtension(path.AsSpan()).TrimStart('.');
-        int dot = fileName.IndexOf('.');
-        if (dot > -1)
-        {
-            fileName = fileName[..dot];
-        }
-
-        return new string(fileName);
     }
 }

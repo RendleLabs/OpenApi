@@ -11,17 +11,19 @@ paths:
         required: true
         name: isoCountryCode
         schema:
-          "$ref": "./IsoCountryCode.schema.json"
+          "$ref": "./Schema/IsoCountryCode.json"
     get:
       responses:
-        '200':
+        200:
           description: Country details
           content:
             application/json:
               schema:
-                "$ref": "./Country.schema.json"
+                "$ref": "./Schema/Country.json"
               example:
                 isoCode: GB
                 englishShortName: United Kingdom
-        '404':
+        404:
           description: Invalid ISO country code
+        500:
+          $ref: './Responses/InternalServerError.yaml'

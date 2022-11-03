@@ -1,7 +1,18 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
+using Microsoft.OpenApi.Models;
 using RendleLabs.OpenApi.Testing.Internal;
+using Xunit.Sdk;
 
 namespace RendleLabs.OpenApi.Testing;
+
+public class OpenApiTestDataAttribute : DataAttribute
+{
+    public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 public class OpenApiTheoryData
 {
@@ -18,17 +29,30 @@ public class OpenApiTheoryData
     {
         var server = _testDocument.Server;
 
+        var list = new List<(OpenApiTestRequest, OpenApiTestResponse)>(_testDocument.Tests.Length);
+
         foreach (var test in _testDocument.Tests)
         {
             var request = OpenApiTestRequest(server, test.Uri, test.Method, test);
 
-            var response = OpenApiTestResponse(test.Expect);
-            
-            yield return new object?[] { request, response };
+            var response = OpenApiTestResponse(test);
+
+            list.Add((request, response));
         }
+
+        for (int i = list.Count - 1; i >= 0; i++)
+        {
+            var (request, response) = list[i];
+            if (request.Path.Contains('{'))
+            {
+                var variables = OutputVariables.Get(request.Path);
+            }
+        }
+
+        throw new NotImplementedException();
     }
 
-    private string CreatePath(OperationType operationType, string pathTemplate, IReadOnlyDictionary<string,string?> parameters)
+    private string CreatePath(OperationType operationType, string pathTemplate, IReadOnlyDictionary<string, string?> parameters)
     {
         if (!_apiDocument.Paths.TryGetValue(pathTemplate, out var pathItem)) return pathTemplate;
         var path = pathTemplate;
@@ -52,28 +76,29 @@ public class OpenApiTheoryData
         return path + queryString;
     }
 
-    private static OpenApiTestRequest OpenApiTestRequest(string? server, string path, HttpMethod method, OpenApiTest operationTest)
+    private static OpenApiTestRequest OpenApiTestRequest(string? server, string path, HttpMethod method, OpenApiTestElement operationTestElement)
     {
         var request = new OpenApiTestRequest
         {
             Server = server,
             Path = path,
             Method = method,
-            Body = operationTest.RequestBody?.Content,
-            ContentType = operationTest.RequestBody?.ContentType,
-            Headers = operationTest.Headers
+            Body = operationTestElement.RequestBody?.Content,
+            ContentType = operationTestElement.RequestBody?.ContentType,
+            Headers = operationTestElement.Headers,
         };
         return request;
     }
 
-    private static OpenApiTestResponse OpenApiTestResponse(OpenApiTestExpect expect)
+    private static OpenApiTestResponse OpenApiTestResponse(OpenApiTestElement testElement)
     {
         var response = new OpenApiTestResponse
         {
-            Status = expect.Status,
-            ContentType = expect.ResponseBody?.ContentType,
-            Body = expect.ResponseBody?.Content,
-            Headers = expect.Headers
+            Status = testElement.Expect.Status,
+            ContentType = testElement.Expect.ResponseBody?.ContentType,
+            Body = testElement.Expect.ResponseBody?.Content,
+            Headers = testElement.Expect.Headers,
+            OutputName = testElement.OutputName,
         };
         return response;
     }
@@ -92,5 +117,59 @@ public class OpenApiTheoryData
             OperationType.Trace => HttpMethod.Trace,
             _ => throw new ArgumentOutOfRangeException(nameof(operationType), operationType, null)
         };
+    }
+}
+
+internal static class OutputVariables
+{
+    private static readonly Regex TextInBraces = new Regex(@"\{\{.+?\}\}", RegexOptions.Compiled);
+
+    public static OutputVariable[] Get(string input)
+    {
+        var matches = TextInBraces.Matches(input);
+        return matches.Count == 0
+            ? Array.Empty<OutputVariable>()
+            : matches.Select(m => m.Value.TrimStart('{')).Select(s => s.TrimEnd('}')).Select(Create).ToArray();
+    }
+
+    private static OutputVariable Create(string input)
+    {
+        input = input.TrimStart('{').TrimEnd('}');
+        var firstDot = input.IndexOf('.');
+        if (firstDot < 1) throw new InvalidOperationException();
+        var source = input.Substring(0, firstDot);
+
+        if (source.Equals("header", StringComparison.OrdinalIgnoreCase)) return new HeaderOutputVariable(source, input.Substring(firstDot + 1));
+
+        throw new NotImplementedException();
+    }
+}
+
+internal abstract class OutputVariable
+{
+    protected OutputVariable(string source)
+    {
+        Source = source;
+    }
+
+    public string Source { get; }
+
+    public abstract string? Get(HttpResponseMessage response);
+}
+
+internal class HeaderOutputVariable : OutputVariable
+{
+    public HeaderOutputVariable(string source, string name) : base(source)
+    {
+        Name = name;
+    }
+
+    public string Name { get; }
+
+    public override string? Get(HttpResponseMessage response)
+    {
+        return response.Headers.TryGetValues(Name, out var values)
+            ? values.FirstOrDefault()
+            : null;
     }
 }

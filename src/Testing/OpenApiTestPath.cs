@@ -5,13 +5,13 @@ namespace RendleLabs.OpenApi.Testing;
 
 public class OpenApiTestPath
 {
-    public OpenApiTestPath(string path, Dictionary<OperationType, OpenApiTest[]> operations)
+    public OpenApiTestPath(string path, Dictionary<OperationType, OpenApiTestElement[]> operations)
     {
         Path = path;
-        Operations = new ReadOnlyDictionary<OperationType, OpenApiTest[]>(operations);
+        Operations = new ReadOnlyDictionary<OperationType, OpenApiTestElement[]>(operations);
     }
 
     public string Path { get; }
 
-    public IReadOnlyDictionary<OperationType, OpenApiTest[]> Operations { get; }
+    public IReadOnlyDictionary<OperationType, OpenApiTestElement[]> Operations { get; }
 }
