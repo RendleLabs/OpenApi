@@ -63,7 +63,8 @@ public class ApiBaseGenerator
                 operationId = operationType.ToString();
             }
             await _writer.WriteAsync($"app.Map{operationType}(\"{path}\", (");
-            foreach (var parameter in pathItem.Parameters.Where(p => p.In == ParameterLocation.Path))
+            
+            foreach (var parameter in pathItem.GetPathParameters())
             {
                 var type = SchemaHelpers.SchemaTypeToDotNetType(parameter.Schema);
                 await _writer.WriteAsync($"{type} {parameter.Name}, ");
@@ -71,6 +72,7 @@ public class ApiBaseGenerator
 
             await _writer.WriteLineAsync("HttpContext context) =>");
             await _writer.WriteLineAsync('{');
+            
             using (_writer.OpenIndent())
             {
                 await _writer.WriteLineAsync("var impl = context.RequestServices.GetService<T>() ?? builder(context.RequestServices);");
@@ -130,4 +132,22 @@ internal static class SchemaHelpers
     {
         return schema.Maximum > int.MaxValue ? "long" : "int";
     }
+}
+
+internal static class PathItemHelpers
+{
+    public static IEnumerable<OpenApiParameter> GetPathParameters(this OpenApiPathItem pathItem) =>
+        GetParametersIn(pathItem, ParameterLocation.Path);
+    
+    public static IEnumerable<OpenApiParameter> GetQueryParameters(this OpenApiPathItem pathItem) =>
+        GetParametersIn(pathItem, ParameterLocation.Query);
+    
+    public static IEnumerable<OpenApiParameter> GetHeaderParameters(this OpenApiPathItem pathItem) =>
+        GetParametersIn(pathItem, ParameterLocation.Header);
+    
+    public static IEnumerable<OpenApiParameter> GetCookieParameters(this OpenApiPathItem pathItem) =>
+        GetParametersIn(pathItem, ParameterLocation.Cookie);
+    
+    private static IEnumerable<OpenApiParameter> GetParametersIn(OpenApiPathItem pathItem, ParameterLocation location) =>
+        pathItem.Parameters.Where(p => p.In == location);
 }
