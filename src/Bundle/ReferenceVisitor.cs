@@ -9,19 +9,15 @@ namespace RendleLabs.OpenApi.Bundle;
 public class ReferenceVisitor : OpenApiVisitorBase
 {
     private static readonly Regex IsHttp = new Regex(@"^https?:\/\/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    
-    private readonly OpenApiDocument _document;
+
     private readonly string _baseDirectory;
-    private readonly SchemaLoader _schemaLoader;
     private readonly ReferenceInfoCollection _references;
 
     public bool AnyChanges { get; set; }
     public Dictionary<string, string> PathToIdLookup { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-    public ReferenceVisitor(OpenApiDocument document, string baseDirectory, ReferenceInfoCollection references)
+    public ReferenceVisitor(string baseDirectory, ReferenceInfoCollection references)
     {
-        _schemaLoader = new SchemaLoader();
-        _document = document;
         _baseDirectory = baseDirectory;
         _references = references;
     }
@@ -35,6 +31,8 @@ public class ReferenceVisitor : OpenApiVisitorBase
         var path = IsHttp.IsMatch(externalResource)
             ? externalResource
             : Path.GetFullPath(externalResource, _baseDirectory);
+
+        element.Reference.ExternalResource = path;
 
         var info = _references.GetOrAdd<T>(path);
         info.References.Add(element);

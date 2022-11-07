@@ -30,7 +30,7 @@ public sealed class Bundler : IDisposable
 
         var references = new ReferenceInfoCollection();
 
-        var referenceVisitor = new ReferenceVisitor(document, _directory, references);
+        var referenceVisitor = new ReferenceVisitor(_directory, references);
         var walker = new OpenApiWalker(referenceVisitor);
         walker.Walk(document);
         if (references.Count == 0) return document;
@@ -41,26 +41,5 @@ public sealed class Bundler : IDisposable
     public void Dispose()
     {
         _source.Dispose();
-    }
-}
-
-public sealed class ReferenceWalker
-{
-    private readonly string _directory;
-
-    public ReferenceWalker(string directory)
-    {
-        _directory = directory;
-    }
-
-    public ReferenceInfoCollection Walk(OpenApiDocument document)
-    {
-        var references = new ReferenceInfoCollection();
-
-        var referenceVisitor = new ReferenceVisitor(document, _directory, references);
-        var walker = new OpenApiWalker(referenceVisitor);
-        walker.Walk(document);
-
-        return references;
     }
 }

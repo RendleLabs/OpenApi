@@ -14,11 +14,21 @@ public class ReferenceWalkerTests
     public async Task FindsReferencesInYaml()
     {
         var path = GetPath("openapi.yaml");
-        var document = await LoadOpenApiDocument(path);
+        var directory = Path.GetDirectoryName(path)!;
+        var document = await LoadOpenApiDocument(path)!;
+        if (document is null) throw new InvalidOperationException();
+        
+        var walker = new ReferenceWalker();
+        var references = new ReferenceInfoCollection();
+        walker.Walk(document, directory, references);
+
+        await new ReferenceResolver(document, references).ResolveAsync();
+        
         Assert.NotNull(document);
-        var walker = new ReferenceWalker(Path.GetDirectoryName(path)!);
-        var references = walker.Walk(document!);
-        Assert.Equal(2, references.Count);
+
+        var country = Assert.Contains("Country", document.Components.Schemas);
+        var isoCountryCode = Assert.Contains("IsoCountryCode", document.Components.Schemas);
+        var internalServerError = Assert.Contains("InternalServerError", document.Components.Responses);
     }
 
     private static async Task<OpenApiDocument?> LoadOpenApiDocument(string openApiPath)

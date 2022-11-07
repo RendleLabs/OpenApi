@@ -29,10 +29,12 @@ public abstract class BooksBase
     protected static IResult Created(Uri uri) => Results.Created(uri, null);
     protected static IResult NotFound() => NotFoundResult;
 
-    public static class Links
+    public static LinkProvider Links { get; } = new LinkProvider();
+
+    public readonly struct LinkProvider
     {
-        public static Uri Get(int id) => new($"/books/{id}", UriKind.Relative);
-        public static Uri Add() => new Uri("/books", UriKind.Relative);
+        public Uri Get(int id) => new($"/books/{id}", UriKind.Relative);
+        public Uri Add() => new Uri("/books", UriKind.Relative);
     }
     
     protected virtual ValueTask<IResult> Get(int id, HttpContext context) => new(NotImplementedResult);
