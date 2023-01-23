@@ -8,17 +8,16 @@ namespace RendleLabs.OpenApi.Bundle;
 
 public class ReferenceVisitor : OpenApiVisitorBase
 {
-    private static readonly Regex IsHttp = new Regex(@"^https?:\/\/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private readonly string _baseDirectory;
+    private readonly string _basePath;
     private readonly ReferenceInfoCollection _references;
 
     public bool AnyChanges { get; set; }
     public Dictionary<string, string> PathToIdLookup { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-    public ReferenceVisitor(string baseDirectory, ReferenceInfoCollection references)
+    public ReferenceVisitor(string basePath, ReferenceInfoCollection references)
     {
-        _baseDirectory = baseDirectory;
+        _basePath = basePath;
         _references = references;
     }
 
@@ -28,13 +27,24 @@ public class ReferenceVisitor : OpenApiVisitorBase
         if (!element.Reference.IsExternal) return;
         if (element.Reference.ExternalResource is not { Length: > 0 } externalResource) return;
 
-        var path = IsHttp.IsMatch(externalResource)
-            ? externalResource
-            : Path.GetFullPath(externalResource, _baseDirectory);
+        if (ReferencePath.IsHttp(_basePath))
+        {
+            if (ReferencePath.IsHttp(externalResource))
+            {
+                element.Reference.ExternalResource = externalResource;
+            }
+            else
+            {
+                var baseUri = new Uri(_basePath);
+                element.Reference.ExternalResource = new Uri(baseUri, externalResource).ToString();
+            }
+        }
+        else
+        {
+            element.Reference.ExternalResource = Path.GetFullPath(externalResource, _basePath);
+        }
 
-        element.Reference.ExternalResource = path;
-
-        var info = _references.GetOrAdd<T>(path);
+        var info = _references.GetOrAdd<T>(element.Reference.ExternalResource);
         info.References.Add(element);
     }
 

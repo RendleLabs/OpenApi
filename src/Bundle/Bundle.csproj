@@ -13,5 +13,9 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.4.1" />
     <PackageReference Include="YamlDotNet" Version="12.0.0" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bundle.Tests" />
+  </ItemGroup>
 
 </Project>

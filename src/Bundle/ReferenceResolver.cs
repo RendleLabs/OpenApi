@@ -93,54 +93,62 @@ public class ReferenceResolver
 
     private async Task LoadAllReferencesAsync()
     {
+        using var loader = new ReferenceLoader();
+        
         while (true)
         {
             int count = _references.Count;
 
             foreach (var reference in _references.ToArray())
             {
-                var text = await File.ReadAllTextAsync(reference.Path);
-                reference.Resolve(text);
-
                 var d = new OpenApiDocument();
                 d.Components ??= new OpenApiComponents();
                 switch (reference)
                 {
-                    case ReferenceInfo<OpenApiCallback> callback:
+                    case ReferenceInfo<OpenApiCallback> callbackInfo:
+                        var callback = await loader.LoadAsync(callbackInfo);
                         d.Components.Callbacks ??= new Dictionary<string, OpenApiCallback>();
-                        d.Components.Callbacks[reference.Id] = callback.ResolvedReference;
+                        d.Components.Callbacks[reference.Id] = callbackInfo.ResolvedReference = callback;
                         break;
-                    case ReferenceInfo<OpenApiExample> example:
+                    case ReferenceInfo<OpenApiExample> exampleInfo:
+                        var example = await loader.LoadAsync(exampleInfo);
                         d.Components.Examples ??= new Dictionary<string, OpenApiExample>();
-                        d.Components.Examples[reference.Id] = example.ResolvedReference;
+                        d.Components.Examples[reference.Id] = exampleInfo.ResolvedReference = example;
                         break;
-                    case ReferenceInfo<OpenApiHeader> header:
+                    case ReferenceInfo<OpenApiHeader> headerInfo:
+                        var header = await loader.LoadAsync(headerInfo);
                         d.Components.Headers ??= new Dictionary<string, OpenApiHeader>();
-                        d.Components.Headers[reference.Id] = header.ResolvedReference;
+                        d.Components.Headers[reference.Id] = headerInfo.ResolvedReference = header;
                         break;
-                    case ReferenceInfo<OpenApiLink> link:
+                    case ReferenceInfo<OpenApiLink> linkInfo:
+                        var link = await loader.LoadAsync(linkInfo);
                         d.Components.Links ??= new Dictionary<string, OpenApiLink>();
-                        d.Components.Links[reference.Id] = link.ResolvedReference;
+                        d.Components.Links[reference.Id] = linkInfo.ResolvedReference = link;
                         break;
-                    case ReferenceInfo<OpenApiParameter> parameter:
+                    case ReferenceInfo<OpenApiParameter> parameterInfo:
+                        var parameter = await loader.LoadAsync(parameterInfo);
                         d.Components.Parameters ??= new Dictionary<string, OpenApiParameter>();
-                        d.Components.Parameters[reference.Id] = parameter.ResolvedReference;
+                        d.Components.Parameters[reference.Id] = parameterInfo.ResolvedReference = parameter;
                         break;
-                    case ReferenceInfo<OpenApiRequestBody> requestBody:
+                    case ReferenceInfo<OpenApiRequestBody> requestBodyInfo:
+                        var requestBody = await loader.LoadAsync(requestBodyInfo);
                         d.Components.RequestBodies ??= new Dictionary<string, OpenApiRequestBody>();
-                        d.Components.RequestBodies[reference.Id] = requestBody.ResolvedReference;
+                        d.Components.RequestBodies[reference.Id] = requestBodyInfo.ResolvedReference = requestBody;
                         break;
-                    case ReferenceInfo<OpenApiResponse> response:
+                    case ReferenceInfo<OpenApiResponse> responseInfo:
+                        var response = await loader.LoadAsync(responseInfo);
                         d.Components.Responses ??= new Dictionary<string, OpenApiResponse>();
-                        d.Components.Responses[reference.Id] = response.ResolvedReference;
+                        d.Components.Responses[reference.Id] = responseInfo.ResolvedReference = response;
                         break;
-                    case ReferenceInfo<OpenApiSchema> schema:
+                    case ReferenceInfo<OpenApiSchema> schemaInfo:
+                        var schema = await loader.LoadAsync(schemaInfo);
                         d.Components.Schemas ??= new Dictionary<string, OpenApiSchema>();
-                        d.Components.Schemas[reference.Id] = schema.ResolvedReference;
+                        d.Components.Schemas[reference.Id] = schemaInfo.ResolvedReference = schema;
                         break;
-                    case ReferenceInfo<OpenApiSecurityScheme> securityScheme:
+                    case ReferenceInfo<OpenApiSecurityScheme> securitySchemeInfo:
+                        var securityScheme = await loader.LoadAsync(securitySchemeInfo);
                         d.Components.SecuritySchemes ??= new Dictionary<string, OpenApiSecurityScheme>();
-                        d.Components.SecuritySchemes[reference.Id] = securityScheme.ResolvedReference;
+                        d.Components.SecuritySchemes[reference.Id] = securitySchemeInfo.ResolvedReference = securityScheme;
                         break;
                     case ReferenceInfo<OpenApiTag> tag:
                         break;

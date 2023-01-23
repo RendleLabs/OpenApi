@@ -1,42 +1,11 @@
-using Microsoft.OpenApi;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
 
 namespace RendleLabs.OpenApi.Bundle;
 
 public abstract class ReferenceInfo
 {
-    protected ReferenceInfo(string path)
-    {
-        Path = path;
-        if (path.StartsWith("http"))
-        {
-        }
-        else
-        {
-            var id = System.IO.Path.GetFileName(path);
-            var dot = id.IndexOf('.');
-            if (dot > 0)
-            {
-                id = id[..dot];
-            }
-
-            Id = id;
-        }
-    }
-
-    public string Path { get; }
-    public string Id { get; set; }
-
-    public abstract void Resolve(string text);
-    
-    public abstract ReferenceType Type { get; }
-}
-
-public class ReferenceInfo<T> : ReferenceInfo where T : IOpenApiReferenceable
-{
-    private static readonly Dictionary<Type, ReferenceType> ReferenceTypes = new Dictionary<Type, ReferenceType>
+    protected static readonly Dictionary<Type, ReferenceType> ReferenceTypes = new()
     {
         [typeof(OpenApiCallback)] = ReferenceType.Callback,
         [typeof(OpenApiExample)] = ReferenceType.Example,
@@ -50,15 +19,42 @@ public class ReferenceInfo<T> : ReferenceInfo where T : IOpenApiReferenceable
         [typeof(OpenApiTag)] = ReferenceType.Tag,
     };
 
+    protected ReferenceInfo(string path)
+    {
+        Path = path;
+        ReadOnlySpan<char> id;
+        if (ReferencePath.IsHttp(path))
+        {
+            var uri = new Uri(path);
+            id = System.IO.Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+        }
+        else
+        {
+            id = System.IO.Path.GetFileName(path);
+        }
+
+        id = id.TrimStart('.');
+        
+        var dot = id.IndexOf('.');
+        if (dot > 0)
+        {
+            id = id[..dot];
+        }
+
+        Id = new string(id);
+    }
+
+    public string Path { get; }
+    public string Id { get; set; }
+
+    public abstract ReferenceType Type { get; }
+}
+
+public class ReferenceInfo<T> : ReferenceInfo where T : IOpenApiReferenceable
+{
     public List<T> References { get; }
 
-    public T ResolvedReference { get; set; }
-
-    public override void Resolve(string text)
-    {
-        var reader = new OpenApiStringReader();
-        ResolvedReference = reader.ReadFragment<T>(text, OpenApiSpecVersion.OpenApi3_0, out _);
-    }
+    public T? ResolvedReference { get; set; }
 
     public ReferenceInfo(string path) : base(path)
     {

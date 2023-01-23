@@ -1,14 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using ApiBase.Models;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using ApiBase.Models;
+using Microsoft.Extensions.Primitives;
 
 namespace ApiBase.Api;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicMethods)]
-public abstract class BooksBase
+public abstract partial class BooksBase
 {
     private static readonly IResult NotImplementedResult = Results.StatusCode(501);
-    private static readonly IResult NotFoundResult = Results.NotFound();
     
     private static void __Map<T>(WebApplication app, Func<IServiceProvider, T> builder) where T : BooksBase
     {
@@ -27,14 +28,35 @@ public abstract class BooksBase
 
     protected static IResult Ok(Book book) => Results.Ok(book);
     protected static IResult Created(Uri uri) => Results.Created(uri, null);
-    protected static IResult NotFound() => NotFoundResult;
+    protected static IResult NotFound() => Results.NotFound();
 
     public static LinkProvider Links { get; } = new LinkProvider();
 
     public readonly struct LinkProvider
     {
-        public Uri Get(int id) => new($"/books/{id}", UriKind.Relative);
+        public Uri Get(int id, string? format = null) => new($"/books/{id}{GetQueryString(format)}", UriKind.Relative);
         public Uri Add() => new Uri("/books", UriKind.Relative);
+
+        private static string GetQueryString(string? format)
+        {
+            if (format is null) return string.Empty;
+            var builder = new StringBuilder();
+            if (format is not null)
+            {
+                if (builder.Length == 0)
+                {
+                    builder.Append('?');
+                }
+                else
+                {
+                    builder.Append('&');
+                }
+
+                builder.Append($"format={Uri.EscapeDataString(format)}");
+            }
+
+            return builder.ToString();
+        }
     }
     
     protected virtual ValueTask<IResult> Get(int id, HttpContext context) => new(NotImplementedResult);

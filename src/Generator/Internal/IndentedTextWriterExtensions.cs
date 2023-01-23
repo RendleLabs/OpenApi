@@ -6,6 +6,8 @@ public static class IndentedTextWriterExtensions
     public static IDisposable OpenIndent(this IndentedTextWriter writer) => new Indent(writer);
     public static IDisposable OpenBrace(this IndentedTextWriter writer) => new Brace(writer);
 
+    public static Task WriteLineNoTabsAsync(this IndentedTextWriter writer) => writer.WriteLineNoTabsAsync(string.Empty);
+
     private class Indent : IDisposable
     {
         private readonly IndentedTextWriter _writer;

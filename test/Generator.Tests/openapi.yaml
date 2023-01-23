@@ -11,6 +11,15 @@ paths:
   /books:
     get:
       operationId: GetBooks
+      parameters:
+        - name: skip
+          in: query
+          schema: 
+            type: integer
+        - name: take
+          in: query
+          schema:
+            type: integer
       tags:
         - Books
       responses: 
@@ -48,20 +57,32 @@ paths:
       responses: 
         '201':
           description: Created
+          content:
+            application/json:
+              schema:
+                title: Book
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  author:
+                    type: string
           headers: 
             Location:
               description: URI of new book
   /books/{id}:
+    parameters:
+      - name: id
+        in: path
+        schema:
+          type: integer
+        required: true
     get:
       operationId: GetBook
       tags:
         - Books
-      parameters:
-        - name: id
-          in: path
-          schema: 
-            type: integer
-          required: true
       responses: 
         '200':
           description: OK
@@ -77,3 +98,5 @@ paths:
                     type: string
                   author:
                     type: string
+        '404':
+          description: Not Found
