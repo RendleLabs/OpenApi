@@ -21,7 +21,7 @@ public class ApiBaseGeneratorTests
     {
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
-        var target = new ApiBaseGenerator(writer, "ApiBase", _apiDocument, "Books");
+        var target = new ApiBaseGenerator(writer, "ApiBase", _apiDocument, new ModelGenerator(), "Books");
         await target.GenerateAsync();
         await writer.FlushAsync();
         var actual = builder.ToString();

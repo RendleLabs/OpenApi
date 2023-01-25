@@ -7,21 +7,25 @@ public class ApiBaseGenerator
 {
     private readonly string _projectNamespace;
     private readonly OpenApiDocument _document;
+    private readonly ModelGenerator _modelGenerator;
     private readonly string _tag;
 
     private static readonly string[] Usings =
     {
+        "System",
         "System.Diagnostics.CodeAnalysis",
+        "System.Threading.Tasks",
         "Microsoft.AspNetCore.Mvc",
         "ApiBase.Models",
     };
 
     private readonly IndentedTextWriter _writer;
 
-    public ApiBaseGenerator(TextWriter writer, string projectNamespace, OpenApiDocument document, string tag)
+    public ApiBaseGenerator(TextWriter writer, string projectNamespace, OpenApiDocument document, ModelGenerator modelGenerator, string tag)
     {
         _projectNamespace = projectNamespace;
         _document = document;
+        _modelGenerator = modelGenerator;
         _tag = tag;
         _writer = writer as IndentedTextWriter ?? new IndentedTextWriter(writer, "    ");
     }
@@ -121,6 +125,7 @@ public class ApiBaseGenerator
                 {
                     if (mediaType.Schema.Title is { Length: > 0 } typeName)
                     {
+                        _modelGenerator.AddSchema(mediaType.Schema);
                         var parameterName = typeName.ToCamelCase();
                         cSharpParameters.Add(parameterName);
                         await _writer.WriteAsync($"[FromBody] {typeName} {parameterName}, ");

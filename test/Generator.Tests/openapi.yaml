@@ -30,15 +30,7 @@ paths:
               schema: 
                 type: array
                 items:
-                  title: Book
-                  type: object
-                  properties: 
-                    id:
-                      type: integer
-                    title:
-                      type: string
-                    author:
-                      type: string
+                  $ref: '#/components/schemas/Book'
     post:
       operationId: AddBook
       tags:
@@ -47,28 +39,14 @@ paths:
         content: 
           application/json:
             schema: 
-              title: NewBook
-              type: object
-              properties: 
-                title:
-                  type: string
-                author:
-                  type: string
+              $ref: '#/components/schemas/NewBook'
       responses: 
         '201':
           description: Created
           content:
             application/json:
               schema:
-                title: Book
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  title:
-                    type: string
-                  author:
-                    type: string
+                $ref: '#/components/schemas/Book'
           headers: 
             Location:
               description: URI of new book
@@ -89,14 +67,24 @@ paths:
           content: 
             application/json:
               schema: 
-                title: Book
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  title:
-                    type: string
-                  author:
-                    type: string
+                $ref: '#/components/schemas/Book'
         '404':
           description: Not Found
+components: 
+  schemas: 
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        author:
+          type: string
+    NewBook:
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string

@@ -2,7 +2,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using ApiBase.Models;
-using Microsoft.Extensions.Primitives;
 
 namespace ApiBase.Api;
 
